@@ -125,13 +125,51 @@ function Split-Choices([string]$t) {
   }
   return @{ prefix = $parts[0]; items = $items }
 }
+# 출제 요령(전국연합 선택형 평가문항 출제 요령)의 선택지 순서 (2026-11-18)
+#  - 'ㄱ, ㄴ'·'Ⓐ, Ⓒ' 같은 기호 묶음: 개수가 적은 것부터, 같으면 가나다(사전식)
+#  - 'A는…', 'B와 C는…'처럼 A·B·C로 시작: 기호 하나짜리를 A→B→C 차례로 먼저, 그다음 둘 이상 비교하는 것
+#  - 그 밖: 짧은 것 → 긴 것, 길이가 거의 같으면 가나다
+#  '➜ 고친 문장' 줄은 길이에 넣지 않는다.
+$KoCulture = [Globalization.CultureInfo]'ko-KR'
+$ComboRe = '^(?:[㉠-㉭Ⓐ-Ⓩⓐ-ⓩㄱ-ㅎ]|\(\s*[가-하A-Ea-e]\s*\))(?:\s*,\s*(?:[㉠-㉭Ⓐ-Ⓩⓐ-ⓩㄱ-ㅎ]|\(\s*[가-하A-Ea-e]\s*\)))*\.?$'
+function Core-Of([string]$s) { return ($s -replace '\s*➜[\s\S]*$', '').Trim() }
+function Order-Choices($items) {
+  $cores = @($items | ForEach-Object { Core-Of $_.core })
+  $list = New-Object System.Collections.ArrayList
+  foreach ($it in $items) { [void]$list.Add($it) }
+  if (@($cores | Where-Object { $_ -notmatch $ComboRe }).Count -eq 0) {
+    $cmp = { param($a, $b) $x = Core-Of $a.core; $y = Core-Of $b.core
+      $d = ($x -split ',').Count - ($y -split ',').Count; if ($d) { return $d }
+      return [string]::Compare(($x -replace '\s', ''), ($y -replace '\s', ''), $KoCulture, [Globalization.CompareOptions]::None) }
+  } elseif (@($cores | Where-Object { $_ -cnotmatch '^[A-E](?![A-Za-z])' }).Count -eq 0) {
+    $cmp = { param($a, $b)
+      $la = ([regex]::Matches((Core-Of $a.core), '(?<![A-Za-z])[A-E](?![A-Za-z])') | ForEach-Object { $_.Value }) -join ''
+      $lb = ([regex]::Matches((Core-Of $b.core), '(?<![A-Za-z])[A-E](?![A-Za-z])') | ForEach-Object { $_.Value }) -join ''
+      $d = $la.Length - $lb.Length; if ($d) { return $d }
+      $s = [string]::CompareOrdinal($la, $lb); if ($s) { return $s }
+      return $a.idx - $b.idx }
+  } else {
+    $cmp = { param($a, $b) $x = Core-Of $a.core; $y = Core-Of $b.core
+      $d = (Width $x) - (Width $y); if ($d -gt 0.6) { return 1 }; if ($d -lt -0.6) { return -1 }
+      $s = [string]::Compare($x, $y, $KoCulture, [Globalization.CompareOptions]::None); if ($s) { return $s }
+      return $a.idx - $b.idx }
+  }
+  # 차례가 바뀌지 않는 삽입 정렬
+  $out = New-Object System.Collections.ArrayList
+  foreach ($it in $list) {
+    $pos = $out.Count
+    while ($pos -gt 0 -and (& $cmp $out[$pos - 1] $it) -gt 0) { $pos-- }
+    $out.Insert($pos, $it)
+  }
+  return , $out.ToArray()
+}
 function Sort-Choices {
   $h = Get-Hwp; if (-not $h) { return }
   $t = Selected $h
   $c = Split-Choices $t
   if ($c.items.Count -lt 2) { Set-Status '선택지 줄(①~⑤)을 먼저 드래그해서 고르세요.' $true; return }
   if ($c.prefix.Trim()) { Set-Status '발문 줄은 빼고 ① 줄부터 ⑤ 줄까지만 고르세요.' $true; return }
-  $sorted = $c.items | Sort-Object @{ e = { Width $_.core } }, @{ e = { $_.idx } }
+  $sorted = Order-Choices $c.items
   $out = $c.prefix; $map = @()
   for ($i = 0; $i -lt $c.items.Count; $i++) {
     $slot = $c.items[$i]; $it = $sorted[$i]
@@ -224,6 +262,8 @@ Btn '<보기> 상자' { Insert-Box 'box_bogi.hwpx' '<보기> 상자를' } 128 | 
 Btn '지문 상자' { Insert-Box 'box_passage.hwpx' '지문 상자를' } 128 | Out-Null
 Btn '빈칸 (        )' { Insert-Symbol '(          )' } 128 | Out-Null
 Btn '☞ 다음 쪽에 계속' { Insert-Symbol '☞ 다음 쪽에 계속' } 128 | Out-Null
+Btn '묶음 지시문 [ ~ ]' { Insert-Symbol '[  ~  ] 다음 글을 읽고 물음에 답하시오.' } 128 '세트 문항은 [ ]로 묶고 지시문은 ''~하시오.''로 통일(출제 요령). 번호는 넣은 뒤 고치세요.' | Out-Null
+Btn '출처 - 「 」 -' { Insert-Symbol '- 「」 -' } 128 '자료 출처는 지문 아래 오른쪽에 - 「작품」 - 모양으로(출제 요령). 책 이름은 『 』, 작품 이름은 「 」, 인용 문장은 “ ”, 인용 어구는 ‘ ’ — 아래 기호 줄에 있어요.' | Out-Null
 
 Head '선택지 (①~⑤ 줄을 드래그한 뒤)'
 Btn '짧은 것부터 ①' { Sort-Choices } 128 '선택지 글 길이가 짧은 것부터 ①~⑤로 다시 놓아요. 정답 번호가 바뀌니 아래 안내를 보고 고치세요.' | Out-Null
@@ -238,7 +278,8 @@ $sets = @(
   @('ⓐ', 'ⓑ', 'ⓒ', 'ⓓ', 'ⓔ'),
   @('㉮', '㉯', '㉰', '㉱', '㉲'),
   @('①', '②', '③', '④', '⑤'),
-  @('ㄱ.', 'ㄴ.', 'ㄷ.', 'ㄹ.', 'ㅁ.')
+  @('ㄱ.', 'ㄴ.', 'ㄷ.', 'ㄹ.', 'ㅁ.'),
+  @('○', '『』', '「」', '“”', '‘’')
 )
 foreach ($set in $sets) { foreach ($sym in $set) { Btn $sym { param($sender) Insert-Symbol ([string]$sender.Tag) } 50 | Out-Null } }
 
