@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이름 가리기 · 업무도우미</title>
+<meta name="author" content="Kang SeongHo">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../common.css">
+<style>
+.win { --c: var(--c-doc); }
+.when { font-size: .9rem; color: var(--ink-2); background: var(--sunk); border-radius: 10px; padding: 10px 14px; }
+.when b { color: var(--ink); }
+</style>
+<script src="../common.js"></script>
+</head>
+<body>
+<div class="win">
+  <header class="w-head">
+    <h1>이름 가리기</h1>
+    <span class="local">명단은 저장하지 않고, 창을 닫으면 사라져요</span>
+  </header>
+  <section class="w-body">
+    <p class="when"><b>이럴 때 써요</b> 게시판·홈페이지·공문에 붙일 명단(수상자, 당첨자, 합격자 등)에서 이름 가운데를 가릴 때. 홍길동 → 홍*동, 이산 → 이*. 사진 속 얼굴이나 이름표를 가리려면 '사진 편집'을 쓰세요.</p>
+    <div class="row">
+      <label>가릴 칸 <select id="mkCol"><option value="0">한글 2~4자로만 된 칸 모두</option><option value="1">1번째 칸</option><option value="2">2번째 칸</option><option value="3">3번째 칸</option><option value="4">4번째 칸</option></select></label>
+      <span class="muted small">이름이 아닌 낱말(예: 국어)까지 가려지면 이름이 있는 칸을 골라 주세요.</span>
+    </div>
+    <div class="cols">
+      <label class="field"><span>원래 명단 (엑셀에서 복사)</span><textarea id="mkIn" spellcheck="false" placeholder="1	홍길동	국어&#10;2	이산	수학"></textarea></label>
+      <div class="field"><span>가린 명단</span><div class="out" id="mkOut"></div><div class="row"><button class="btn primary" id="mkCopy">복사</button></div></div>
+    </div>
+  </section>
+</div>
+<script>
+'use strict';
+const isName = s => /^[가-힣]{2,4}$/.test(s);
+const mask = n => n.length === 2 ? n[0] + '*' : n[0] + '*'.repeat(n.length - 2) + n[n.length - 1];
+function runMask() {
+  const col = +$('mkCol').value;
+  const rows = $('mkIn').value.replace(/\r/g, '').split('\n').map(l => l.split('\t'));
+  $('mkOut').textContent = rows.map(r => r.map((c, i) => { const t = c.trim(); return (col ? i === col - 1 && t.length >= 2 : isName(t)) ? mask(t) : c; }).join('\t')).join('\n');
+}
+$('mkIn').addEventListener('input', runMask); $('mkCol').addEventListener('change', runMask);
+$('mkCopy').addEventListener('click', () => copyText($('mkOut').textContent));
+runMask();
+</script>
+</body>
+</html>
