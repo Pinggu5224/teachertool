@@ -83,7 +83,7 @@ td .x { border: 0; background: none; color: var(--muted); font-size: 1.15rem; pa
     <nav class="w-tabs" id="tabs">
       <button data-tab="conv" class="on">바꾸기</button><button data-tab="size">용량 맞추기</button><button data-tab="pdf">PDF 편집</button><button data-tab="read">내용 보기</button>
     </nav>
-    <span class="local">파일은 이 PC 안에서만 처리해요</span>
+    <span class="local"><b>서버에 올리지 않아요</b> 파일은 이 PC 안에서만 처리해요</span>
   </header>
 
   <!-- 바꾸기 -->
@@ -95,6 +95,7 @@ td .x { border: 0; background: none; color: var(--muted); font-size: 1.15rem; pa
         둥근 메뉴가 뜨면 원하는 칸에 놓으면 끝이에요. 바꾼 파일은 다운로드 폴더에 저장돼요.<br>
         <span class="small">한글·PDF·워드 → 텍스트·워드·엑셀 · 사진 → PDF · PDF → 이미지 · 용량 줄이기(고화질·균형·최대) · 합치기 · 쪽 편집</span><br><br>
         <button class="btn" id="stagePick" type="button">끌기 어려우면 눌러서 파일 고르기</button>
+        <span class="safe" style="display:flex;justify-content:center;margin-top:14px">파일은 인터넷(서버)으로 보내지 않고, 이 PC 안에서만 바꿔요</span>
       </div>
     </div>
     <input type="file" id="cvFile" multiple hidden>

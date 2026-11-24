@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>배점·성취도 · 업무도우미</title>
+<title>배점 만들기 · 업무도우미</title>
 <meta name="author" content="Kang SeongHo">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -37,9 +37,9 @@
 <body>
 <div class="win">
   <header class="w-head">
-    <h1>배점·성취도</h1>
-    <nav class="w-tabs" id="tabs"><button data-tab="pts" class="on">배점 산출</button><button data-tab="dist">성취도 분포</button></nav>
-    <span class="local">점수는 저장하지 않아요</span>
+    <h1>배점 만들기</h1>
+    <nav class="w-tabs" id="tabs"><button data-tab="pts" class="on">배점 산출</button></nav>
+    <span class="local"><b>서버에 올리지 않아요</b> 점수는 창을 닫으면 사라져요</span>
   </header>
 
   <!-- 배점 산출 -->
@@ -63,23 +63,6 @@
     <h2 style="margin-top:14px">내 배점표 합계 확인</h2>
     <div class="rows" id="bRows"></div>
     <div class="row"><button class="btn" id="bAdd">줄 추가</button><span class="big num" id="bSum"></span></div>
-  </section>
-
-  <!-- 성취도 분포 -->
-  <section class="w-body" data-pane="dist" hidden>
-    <p class="muted">점수를 한 줄에 하나씩 붙여 넣으세요. 엑셀의 점수 칸을 그대로 복사하면 돼요. 숫자가 아닌 칸은 건너뛰어요.</p>
-    <div class="cols">
-      <label class="field"><span>점수</span><textarea id="dIn" spellcheck="false" placeholder="92&#10;87.5&#10;74"></textarea></label>
-      <div class="field"><span>기준 점수 (이상)</span>
-        <div class="row"><div class="seg" id="dMode" style="display:inline-flex;background:var(--sunk);border-radius:9px;padding:3px;gap:2px">
-          <button class="btn" data-m="5" style="border:0">5단계 (A~E)</button><button class="btn" data-m="3" style="border:0">3단계 (A~C)</button></div></div>
-        <div class="opts cuts" id="dCuts"></div>
-        <p class="muted small">처음 값은 성취평가에서 흔히 쓰는 90·80·70·60점(3단계는 80·60점)이에요. 과목의 분할점수가 다르면 고쳐 주세요.</p>
-        <div class="stats" id="dStats"></div>
-        <div class="dist" id="dOut"></div>
-        <div class="row"><button class="btn primary" id="dCopy">분포 복사</button></div>
-      </div>
-    </div>
   </section>
 </div>
 
@@ -180,28 +163,8 @@ $('bRows').addEventListener('click', e => { const d = e.target.closest('[data-de
 $('bAdd').addEventListener('click', () => { rows.push([1, 4]); renderRows(); });
 $('aT').addEventListener('input', sumRows);
 
-// ── 성취도 분포 ──
-let mode = 5, cuts = { 5: [90, 80, 70, 60], 3: [80, 60] }, dLast = '';
-function renderCuts() {
-  $('dMode').querySelectorAll('button').forEach(b => { const on = +b.dataset.m === mode; b.style.background = on ? 'var(--surface)' : 'transparent'; b.style.color = on ? 'var(--ink)' : 'var(--muted)'; });
-  $('dCuts').innerHTML = cuts[mode].map((c, i) => `<label>${'ABCDE'[i]} <input data-i="${i}" inputmode="decimal" value="${c}"> 점 이상</label>`).join('') + `<span class="muted">그 아래는 ${'ABCDE'[cuts[mode].length]}</span>`;
-}
-function dist() {
-  const scores = $('dIn').value.split(/[\n\t]+/).map(s => s.trim()).filter(s => s !== '' && !isNaN(+s)).map(Number);
-  const cs = cuts[mode].map(Number), labels = 'ABCDE'.slice(0, cs.length + 1).split(''), cnt = labels.map(() => 0);
-  for (const s of scores) { let i = cs.findIndex(c => s >= c); if (i < 0) i = cs.length; cnt[i]++; }
-  const n = scores.length, avg = n ? scores.reduce((a, b) => a + b, 0) / n : 0, sd = n ? Math.sqrt(scores.reduce((a, b) => a + (b - avg) ** 2, 0) / n) : 0;
-  $('dStats').innerHTML = n ? `<div>인원<b class="num">${n}명</b></div><div>평균<b class="num">${avg.toFixed(1)}</b></div><div>표준편차<b class="num">${sd.toFixed(1)}</b></div><div>최고<b class="num">${Math.max(...scores)}</b></div><div>최저<b class="num">${Math.min(...scores)}</b></div>` : '';
-  const pct = k => n ? (k / n * 100).toFixed(1) : '0.0';
-  $('dOut').innerHTML = n ? labels.map((l, i) => `<div class="d"><b>${l}</b><div class="bar"><span style="width:${pct(cnt[i])}%"></span></div><span class="num">${cnt[i]}명 (${pct(cnt[i])}%)</span></div>`).join('') : '';
-  dLast = n ? ['성취도\t인원\t비율(%)', ...labels.map((l, i) => `${l}\t${cnt[i]}\t${pct(cnt[i])}`), `계\t${n}\t100.0`, `평균\t${avg.toFixed(1)}`, `표준편차\t${sd.toFixed(1)}`].join('\n') : '';
-}
-$('dIn').addEventListener('input', dist);
-$('dMode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; mode = +b.dataset.m; renderCuts(); dist(); });
-$('dCuts').addEventListener('input', e => { if (e.target.dataset.i === undefined) return; cuts[mode][+e.target.dataset.i] = e.target.value; dist(); });
-$('dCopy').addEventListener('click', () => dLast ? copyText(dLast) : toast('점수를 먼저 넣어 주세요.'));
 
-combos(); renderRows(); renderCuts(); dist();
+combos(); renderRows();
 </script>
 </body>
 </html>

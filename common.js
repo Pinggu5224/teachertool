@@ -45,7 +45,10 @@ const baseName = n => n.replace(/\.[^.]+$/, '');
 const extOf = n => (n.match(/\.([^.]+)$/) || ['', ''])[1].toLowerCase();
 
 // 끌어다 놓기 + 눌러서 고르기
+const SAFE_TEXT = '인터넷(서버)으로 보내지 않고, 이 PC 안에서만 처리해요';
 function dropZone(el, input, onFiles) {
+  // 파일을 넣는 칸마다 '서버로 보내지 않는다'는 안내를 붙인다 (2026-11-24)
+  if (!el.querySelector('.safe')) { const s = document.createElement('span'); s.className = 'safe'; s.textContent = SAFE_TEXT; el.appendChild(s); }
   el.addEventListener('click', () => input.click());
   input.addEventListener('change', () => { const f = [...input.files]; input.value = ''; if (f.length) onFiles(f); });
   el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('over'); });
