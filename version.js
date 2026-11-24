@@ -1,8 +1,16 @@
 // 버전을 올릴 때 sw.js의 CACHE 이름도 같이 바꾼다.
 window.APP_VERSION = {
-  version: '0.5.7',
+  version: '0.5.8',
   date: '2026-11-24',
   changes: [
+    {
+      version: '0.5.8', date: '2026-11-24',
+      items: [
+        '용량 맞추기: 한글(HWPX)·PPT·워드·엑셀도 줄여요. 안의 그림을 줄이고, Windows에 늘 있는 글꼴(맑은 고딕 등)을 문서에 넣어 둔 것은 빼요(14.4MB PPT → 2.4MB, 모양은 그대로)',
+        '옛 한글(HWP)은 한글에서 HWPX로 저장해 넣으라고 안내',
+        '둥근 메뉴의 최대·균형·고화질도 PPT·워드·엑셀에 쓸 수 있어요'
+      ]
+    },
     {
       version: '0.5.7', date: '2026-11-24',
       items: [
