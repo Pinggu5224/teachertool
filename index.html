@@ -172,27 +172,27 @@ const I = {
   qr: '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/>',
   gear: '<path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h12"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/>',
 };
-const GROUPS = [['class', '학급'], ['doc', '문서'], ['grade', '평가'], ['record', '생기부'], ['etc', '그 밖']];
+// 세 묶음에 세 개씩: 한 개짜리 묶음이 외따로 남지 않게 (2026-11-24). c = 타일·아이콘 색
+const GROUPS = [['grade', '시험'], ['doc', '문서'], ['class', '학급·생기부']];
 const TOOLS = [
-  { g: 'class', name: 'seat', url: 'tools/seat.html', icon: 'seat', short: '자리', title: '자리뽑기', desc: '규칙을 지키며 자리 뽑기, 자리표 출력' },
-  { g: 'doc', name: 'docs', url: 'tools/docs.html#size', icon: 'size', short: '용량', title: '첨부 용량 맞추기', desc: '사진·PDF·한글·PPT를 합쳐서 5MB 아래로', id: 'sizeDesc' },
-  { g: 'doc', name: 'docs', url: 'tools/docs.html#pdf', icon: 'pdf', short: 'PDF', title: 'PDF 편집', desc: '합치기, 쪽 골라내기, 돌리기, 글 뽑기' },
-  { g: 'doc', name: 'image', url: 'tools/image.html', icon: 'mask', short: '가리기', title: '가리기', desc: '사진 속 얼굴·이름, 명단 이름(홍*동)' },
-  { g: 'grade', name: 'exam', url: 'tools/exam.html', icon: 'exam', short: '시험지', title: '시험지 점검·배점', desc: '원안지 점검, 난이도별 배점, 문항정보표 대조' },
-  { g: 'grade', launch: 'udesk-hangul:open', icon: 'hwp', short: '한글 편집', title: '시험지 편집 도우미', desc: '한글 옆 버튼 창: 자간, 서식, 보기 상자, 기호', ext: '한글 옆 창' },
-  { g: 'grade', name: 'grade', url: 'tools/grade.html', icon: 'grade', short: '수행', title: '수행평가 계산', desc: '합산, 반영 비율 환산, 점수 오류 찾기' },
-  { g: 'record', name: 'check', url: 'tools/check.html', icon: 'check', short: '생기부', title: '생기부 점검', desc: '일람표·PDF를 기재요령 기준으로 점검' },
-  { g: 'etc', name: 'qr', url: 'tools/qr.html', icon: 'qr', short: 'QR', title: 'QR 만들기', desc: '설문·자료 주소를 QR 그림으로' },
-];
-const svg = k => `<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+  { g: 'grade', c: 'grade', name: 'exam', url: 'tools/exam.html#check', icon: 'exam', short: '시험지', title: '시험지 점검', desc: '원안지 번호·배점·선택지·밑줄, 문항정보표 대조' },
+  { g: 'grade', c: 'grade', launch: 'udesk-hangul:open', icon: 'hwp', short: '시험지편집', title: '시험지 편집', desc: '한글 옆 버튼 창: 자간, 서식, 보기 상자, 기호', ext: '한글 옆 창' },
+  { g: 'grade', c: 'grade', name: 'exam', url: 'tools/exam.html#pts', icon: 'grade', short: '배점', title: '배점 계산', desc: '상·중·하 문항 수로 0.1점 단위 배점, 문항별 배점표' },
+  { g: 'doc', c: 'doc', name: 'docs', url: 'tools/docs.html#size', icon: 'size', short: '용량', title: '첨부 용량 맞추기', desc: '사진·PDF·한글·PPT를 합쳐서 5MB 아래로', id: 'sizeDesc' },
+  { g: 'doc', c: 'doc', name: 'docs', url: 'tools/docs.html#pdf', icon: 'pdf', short: 'PDF', title: 'PDF 편집', desc: '합치기, 쪽 골라내기, 돌리기, 글 뽑기' },
+  { g: 'doc', c: 'doc', name: 'image', url: 'tools/image.html', icon: 'mask', short: '사진편집', title: '사진 편집', desc: '얼굴·이름 가리기, 자르기 / 명단 이름 가리기' },
+  { g: 'class', c: 'class', name: 'seat', url: 'tools/seat.html', icon: 'seat', short: '자리', title: '자리뽑기', desc: '규칙을 지키며 자리 뽑기, 자리표 출력' },
+  { g: 'class', c: 'record', name: 'check', url: 'tools/check.html', icon: 'check', short: '생기부', title: '생기부 점검', desc: '일람표·PDF를 기재요령 기준으로 점검' },
+  { g: 'class', c: 'etc', name: 'qr', url: 'tools/qr.html', icon: 'qr', short: 'QR', title: 'QR 만들기', desc: '설문·자료 주소를 QR 그림으로' },
+];const svg = k => `<svg viewBox="0 0 24 24">${I[k]}</svg>`;
 const attrs = (t, i) => t.launch ? `data-launch="${t.launch}"` : `data-i="${i}"`;
 $('rail').innerHTML =
   `<button class="r home here" id="railHome" title="홈">${svg('home')}홈</button>` +
   `<button class="r call" id="ycOpen" title="학생 호출 (유콜)">${svg('bell')}호출</button>` +
-  GROUPS.map(([g]) => TOOLS.map((t, i) => t.g !== g ? '' : `<button class="r g-${g}" ${attrs(t, i)} title="${esc(t.title)}">${svg(t.icon)}${esc(t.short)}</button>`).join('')).join('<div class="sep"></div>') +
+  GROUPS.map(([g]) => TOOLS.map((t, i) => t.g !== g ? '' : `<button class="r g-${t.c}" ${attrs(t, i)} title="${esc(t.title)}">${svg(t.icon)}${esc(t.short)}</button>`).join('')).join('<div class="sep"></div>') +
   `<div class="grow"></div><button class="r" id="setBtn" title="설정">${svg('gear')}설정</button>`;
 $('groups').innerHTML = GROUPS.map(([g, label]) => `<div class="group g-${g}"><h2>${label}</h2>` +
-  TOOLS.map((t, i) => t.g !== g ? '' : `<button class="tile g-${g}" ${attrs(t, i)}><span class="ic">${svg(t.icon)}</span><span><b>${esc(t.title)}${t.ext ? `<span class="ext">${t.ext}</span>` : ''}</b><small${t.id ? ` id="${t.id}"` : ''}>${esc(t.desc)}</small></span></button>`).join('') + '</div>').join('');
+  TOOLS.map((t, i) => t.g !== g ? '' : `<button class="tile g-${t.c}" ${attrs(t, i)}><span class="ic">${svg(t.icon)}</span><span><b>${esc(t.title)}${t.ext ? `<span class="ext">${t.ext}</span>` : ''}</b><small${t.id ? ` id="${t.id}"` : ''}>${esc(t.desc)}</small></span></button>`).join('') + '</div>').join('');
 
 // ── 유콜과 도구 열기 ──
 const validYoucall = u => /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec(\?.*)?$/.test(u);
@@ -270,7 +270,7 @@ function launch(href) {
   window.addEventListener('blur', onBlur, { once: true });
   const a = document.createElement('a'); a.href = href; document.body.appendChild(a); a.click(); a.remove();
   toast('한글 옆에 편집 도우미 창을 여는 중이에요.');
-  setTimeout(() => { window.removeEventListener('blur', onBlur); if (!left) toast("창이 안 뜨면 '시험지 점검·배점' 화면 아래 '편집 도우미 받기'로 받아 설치해 주세요."); }, 2500);
+  setTimeout(() => { window.removeEventListener('blur', onBlur); if (!left) toast("창이 안 뜨면 '시험지 점검' 화면 아래 '편집 도우미 받기'로 받아 설치해 주세요."); }, 2500);
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-i], [data-launch]'); if (!b) return;
