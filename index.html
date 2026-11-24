@@ -51,7 +51,8 @@ body { display: flex; }
 .tool.here b { color: color-mix(in srgb, var(--c) 70%, var(--ink)); }
 .tool .ext { font-size: .7rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; margin-left: 4px; vertical-align: 1px; }
 .g-record { --c: var(--c-record); } .g-class { --c: var(--c-class); } .g-doc { --c: var(--c-doc); } .g-grade { --c: var(--c-grade); } .g-etc { --c: var(--ink-2); }
-.p-safe { margin: 4px 18px 0; padding: 10px 12px; border-radius: 10px; background: var(--ok-soft); line-height: 1.45; align-items: flex-start; }
+.p-head { flex-wrap: wrap; }
+.p-safe { flex-basis: 100%; margin: 6px 8px 2px 0; padding: 8px 12px; border-radius: 10px; background: var(--ok-soft); line-height: 1.45; align-items: flex-start; font-size: .8rem; }
 .p-safe::before { margin-top: 2px; }
 .p-foot { padding: 10px 18px 14px; color: var(--muted); font-size: .76rem; display: flex; justify-content: space-between; }
 
@@ -93,6 +94,7 @@ body { display: flex; }
   <div class="p-head">
     <b>업무도우미<span id="verHead"></span></b>
     <button id="setBtn" title="설정" aria-label="설정"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h12M20 17h0"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/></svg></button>
+    <p class="safe p-safe">넣은 파일·명단·점수는 서버에 올리지 않아요. 이 PC 안에서만 처리하고 창을 닫으면 사라져요.</p>
   </div>
 
   <!-- 설정 -->
@@ -121,11 +123,8 @@ body { display: flex; }
   <nav class="tools" id="tools" aria-label="도구">
     <div class="grp g-class">학급</div>
     <button class="tool g-class" data-open="tools/seat.html" data-name="seat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="3.5" rx="1"/><rect x="4" y="10.5" width="6" height="4" rx="1"/><rect x="14" y="10.5" width="6" height="4" rx="1"/><rect x="4" y="17.5" width="6" height="3" rx="1"/><rect x="14" y="17.5" width="6" height="3" rx="1"/></svg></span><span><b>자리뽑기</b><small>규칙을 지키며 자리 뽑기, 자리표 출력</small></span><span class="dot" aria-hidden="true"></span></button>
-    <button class="tool g-class" data-open="tools/roster.html" data-name="roster"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 6h9M5 12h14M5 18h6"/><path d="m16 16 2 2 3-4"/></svg></span><span><b>제출 확인·안내</b><small>안 낸 학생 찾고 안내 문구 만들기, 체크표</small></span><span class="dot" aria-hidden="true"></span></button>
-    <button class="tool g-class" data-open="tools/class.html" data-name="class"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 19.5a5.5 5.5 0 0 1 11 0M14.5 19.5a4.5 4.5 0 0 1 7 -3.6"/></svg></span><span><b>담임 업무</b><small>상담 시간표, 당번·1인 1역, 이름표</small></span><span class="dot" aria-hidden="true"></span></button>
 
     <div class="grp g-doc">문서</div>
-    <button class="tool g-doc" data-open="tools/docs.html#conv" data-name="docs"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5v3M20.5 12h-3M12 20.5v-3M3.5 12h3"/></svg></span><span><b>문서 바꾸기</b><small>끌어 오면 둥근 메뉴, 원하는 형식에 놓으면 끝</small></span><span class="dot" aria-hidden="true"></span></button>
     <button class="tool g-doc" data-open="tools/docs.html#size" data-name="docs"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4"/><path d="M5 19h14"/></svg></span><span><b>첨부 용량 맞추기</b><small id="sizeDesc">합쳐서 5MB 아래로 줄이기</small></span><span class="dot" aria-hidden="true"></span></button>
     <button class="tool g-doc" data-open="tools/docs.html#pdf" data-name="docs"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="13" rx="1.5"/><path d="M10 20h8.5a1.5 1.5 0 0 0 1.5-1.5V8"/></svg></span><span><b>PDF 편집</b><small>합치기, 쪽 골라내기, 돌리기</small></span><span class="dot" aria-hidden="true"></span></button>
     <button class="tool g-doc" data-open="tools/image.html" data-name="image"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4 3.5"/></svg></span><span><b>사진 편집</b><small>얼굴·이름 가리기, 자르기, 크기 줄이기</small></span><span class="dot" aria-hidden="true"></span></button>
@@ -143,7 +142,6 @@ body { display: flex; }
     <div class="grp g-etc">그 밖</div>
     <button class="tool g-etc" data-open="tools/qr.html" data-name="qr"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></svg></span><span><b>QR 만들기</b><small>설문·자료 주소를 QR 그림으로</small></span><span class="dot" aria-hidden="true"></span></button>
   </nav>
-  <p class="safe p-safe">넣은 파일·명단·점수는 서버에 올리지 않아요. 이 PC 안에서만 처리하고, 창을 닫으면 사라져요.</p>
   <div class="p-foot"><span>© 2026 Kang SeongHo</span><span id="verFoot"></span></div>
 </div>
 

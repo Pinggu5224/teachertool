@@ -81,32 +81,14 @@ td .x { border: 0; background: none; color: var(--muted); font-size: 1.15rem; pa
   <header class="w-head">
     <h1>문서 도구</h1>
     <nav class="w-tabs" id="tabs">
-      <button data-tab="conv" class="on">바꾸기</button><button data-tab="size">용량 맞추기</button><button data-tab="pdf">PDF 편집</button><button data-tab="read">내용 보기</button>
+      <button data-tab="size" class="on">용량 맞추기</button><button data-tab="pdf">PDF 편집</button><button data-tab="read">내용 보기</button>
     </nav>
     <span class="local"><b>서버에 올리지 않아요</b> 파일은 이 PC 안에서만 처리해요</span>
   </header>
 
-  <!-- 바꾸기 -->
-  <section class="w-body" data-pane="conv">
-    <div class="stage" id="stage" role="button" tabindex="0">
-      <div>
-        <div class="demo" aria-hidden="true"><i style="left:58px;top:0"></i><i style="left:108px;top:22px"></i><i style="left:116px;top:76px"></i><i style="left:86px;top:116px"></i><i style="left:30px;top:116px"></i><i style="left:0;top:76px"></i><i style="left:8px;top:22px"></i><span>취소</span></div>
-        <b>파일을 이 창으로 끌어 오세요</b>
-        둥근 메뉴가 뜨면 원하는 칸에 놓으면 끝이에요. 바꾼 파일은 다운로드 폴더에 저장돼요.<br>
-        <span class="small">한글·PDF·워드 → 텍스트·워드·엑셀 · 사진 → PDF · PDF → 이미지 · 용량 줄이기(고화질·균형·최대) · 합치기 · 쪽 편집</span><br><br>
-        <button class="btn" id="stagePick" type="button">끌기 어려우면 눌러서 파일 고르기</button>
-        <span class="safe" style="display:flex;justify-content:center;margin-top:14px">파일은 인터넷(서버)으로 보내지 않고, 이 PC 안에서만 바꿔요</span>
-      </div>
-    </div>
-    <input type="file" id="cvFile" multiple hidden>
-    <div class="status" id="cvStatus"></div>
-    <div class="results" id="cvOut"></div>
-    <div class="row" id="cvActs" hidden><button class="btn" id="cvZip">모두 ZIP으로 저장</button><button class="btn" id="cvClear">목록 비우기</button></div>
-    <p class="muted small">한글 파일의 글꼴·줄 간격 같은 모양까지 그대로 옮기지는 못해요. 옛 한글(HWP) 파일의 표는 칸 순서대로 글로 나와요.</p>
-  </section>
 
   <!-- 용량 맞추기 -->
-  <section class="w-body" data-pane="size" hidden>
+  <section class="w-body" data-pane="size">
     <div class="drop" id="szDrop"><b>첨부할 파일을 모두 여기에 끌어다 놓으세요</b>사진(JPG·PNG)과 PDF를 줄여서 합계를 맞춰요. 눌러서 골라도 돼요.<input type="file" id="szFile" multiple hidden></div>
     <div id="szMain" hidden>
       <div class="sum">
@@ -616,137 +598,6 @@ async function zipSave(list, name) {
   const zip = new JSZip(), used = new Set();
   for (const r of list) { let n = r.name, k = 2; while (used.has(n)) n = `${baseName(r.name)} (${k++}).${extOf(r.name)}`; used.add(n); zip.file(n, r.blob); }
   saveBlob(await zip.generateAsync({ type: 'blob', compression: 'STORE' }), name);
-}
-// ═════════ 둥근 메뉴 (끌어 오면 커서 둘레에 뜨고, 원하는 칸에 놓으면 끝) ═════════
-// 칸: [종류, 이름, 작은 설명, 색, 켜지는 조건(파일 종류 묶음 → 참/거짓)]
-// 묶음 g = { pdf, image, doc(한글·워드·그 밖), n(파일 수) }. 끄는 동안에는 파일 이름을 알 수 없어서 MIME 종류로 짐작한다.
-const SLOTS = [
-  ['txt', '텍스트', '글만', '#e8e4fb', g => g.pdf || g.doc],
-  ['doc', '워드', '.doc', '#dfe8fb', g => g.pdf || g.doc],
-  ['xlsx', '엑셀', '표만', '#dcf2e5', g => g.doc],
-  ['pdf', 'PDF', '사진·합치기', '#fde4e1', g => g.image || (g.pdf && g.n > 1)],
-  ['jpg', '이미지', 'PDF 쪽마다', '#fdf0d5', g => g.pdf],
-  ['edit', '편집', '쪽·돌리기', '#d9f0f7', g => g.pdf && g.n === 1],
-  ['shrink2', '최대', '많이 줄임', '#eeedf2', g => g.pdf || g.image || g.office],
-  ['shrink1', '균형', '보통', '#eeedf2', g => g.pdf || g.image || g.office],
-  ['shrink0', '고화질', '조금 줄임', '#eeedf2', g => g.pdf || g.image || g.office],
-  ['size', '합계', '', '#eeedf2', g => g.pdf || g.image || g.office],
-];
-const SHRINK = { shrink0: [1, 0], shrink1: [3, 1], shrink2: [5, 3] }; // [사진 단계, PDF 단계]
-let ring = null, ringFiles = null;
-const groupOf = list => {
-  const g = { pdf: false, image: false, doc: false, office: false, n: list.length };
-  for (const it of list) {
-    const t = it.type || '', n = (it.name || '').toLowerCase();
-    if (t === 'application/pdf' || n.endsWith('.pdf')) g.pdf = true;
-    else if (t.startsWith('image/') || /\.(jpe?g|png|webp|bmp)$/.test(n)) g.image = true;
-    else { g.doc = true; if (/openxmlformats|hwp\+zip/.test(t) || /\.(hwpx|pptx|docx|xlsx)$/.test(n)) g.office = true; }
-  }
-  return g;
-};
-function openRing(x, y, g, menuMode) {
-  closeRing();
-  const veil = document.createElement('div'); veil.className = 'ring-veil';
-  const el = document.createElement('div'); el.className = 'ring';
-  const W = innerWidth, H = innerHeight;
-  el.style.left = Math.min(Math.max(x, 200), W - 200) + 'px'; el.style.top = Math.min(Math.max(y, 200), H - 230) + 'px';
-  // 이 파일로 할 수 있는 칸만 둥글게 고르게 놓는다(못 쓰는 칸은 아예 보이지 않게).
-  const usable = SLOTS.filter(s => s[4](g)), n = usable.length;
-  const R = n <= 3 ? 118 : n <= 6 ? 132 : 140;
-  el.innerHTML = usable.map(([k, name, sub, color], i) => {
-    const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1);
-    const label = k === 'size' ? `${S.targetMB}MB` : sub;
-    return `<button class="slot" data-k="${k}" style="left:${190 + R * Math.cos(a)}px;top:${190 + R * Math.sin(a)}px;--slot:${color}">${name}<small>${label}</small></button>`;
-  }).join('') + `<div class="mid" data-k="cancel">${menuMode ? '닫기' : '취소<br><small>여기 놓으면 안 바꿔요</small>'}</div><div class="lab" id="ringLab">${n
-    ? `${g.n}개 파일 · 원하는 칸에 ${menuMode ? '누르세요' : '놓으세요'}${g.doc && !g.office && !g.pdf && !g.image ? ' · 한글 파일은 글·워드·엑셀로만 바꿀 수 있어요' : ''}`
-    : '이 파일로 할 수 있는 것이 없어요 · 한글·PDF·워드·사진 파일을 넣어 주세요'}</div>`;
-  document.body.append(veil, el);
-  ring = { el, veil, menuMode };
-  el.addEventListener('dragover', e => {
-    e.preventDefault();
-    const s = e.target.closest('.slot, .mid');
-    el.querySelectorAll('.over').forEach(x => x !== s && x.classList.remove('over'));
-    if (s && !s.disabled) s.classList.add('over');
-    e.dataTransfer.dropEffect = s && !s.disabled && s.dataset.k !== 'cancel' ? 'copy' : 'none';
-  });
-  el.addEventListener('drop', e => { e.preventDefault(); const s = e.target.closest('.slot'); const f = [...e.dataTransfer.files]; closeRing(); if (s && !s.disabled && f.length) runSlot(s.dataset.k, f); else toast('바꾸지 않았어요.'); });
-  el.addEventListener('click', e => { const s = e.target.closest('.slot, .mid'); if (!s) return; const f = ringFiles; closeRing(); if (s.dataset.k !== 'cancel' && !s.disabled && f) runSlot(s.dataset.k, f); });
-  veil.addEventListener('click', closeRing);
-}
-function closeRing() { if (!ring) return; ring.el.remove(); ring.veil.remove(); ring = null; ringFiles = null; }
-addEventListener('keydown', e => { if (e.key === 'Escape') closeRing(); });
-
-async function runSlot(k, files) {
-  if (k === 'edit') { $('tabs').querySelector('[data-tab="pdf"]').click(); pgLoad(files); return; }
-  if (k === 'size') return convert('size', files);
-  if (k in SHRINK) return shrinkFiles(files, SHRINK[k], { shrink0: '고화질', shrink1: '균형', shrink2: '최대' }[k]);
-  if (k === 'pdf' && files.some(f => kindOf(f) === 'pdf')) return mergeFiles(files);
-  return convert(k, files);
-}
-// 하나하나 정해진 단계로 줄인다. 줄였는데 더 커지면 원래 파일을 둔다.
-async function shrinkFiles(files, [li, lp], label) {
-  const st = $('cvStatus'), made = [];
-  for (const f of files) {
-    const kind = kindOf(f);
-    if (kind === 'other') { made.push({ name: f.name, error: '사진·PDF·한글(HWPX)·PPT·워드·엑셀만 줄일 수 있어요' }); continue; }
-    if (kind === 'hwp') { made.push({ name: f.name, error: '옛 한글(HWP)은 한글에서 HWPX로 저장해 넣어 주세요' }); continue; }
-    st.textContent = `${f.name} 줄이는 중…`;
-    try {
-      const blob = kind === 'image' ? await shrinkImage(f, IMG_LV[li]) : kind === 'pack' ? await shrinkPack(f, PACK_LV[li])
-        : await shrinkPdf(f, PDF_LV[lp], (p, n) => { st.textContent = `${f.name} 줄이는 중… ${p}/${n}쪽`; });
-      const smaller = blob && blob.size < f.size, ext = kind === 'image' ? 'jpg' : kind === 'pack' ? extOf(f.name) : 'pdf';
-      made.push({ name: smaller ? baseName(f.name) + '_줄임.' + ext : f.name, blob: smaller ? blob : f, note: `${fmtMB(f.size)} → ${fmtMB(smaller ? blob.size : f.size)}${smaller ? '' : ' (더 줄지 않아 원래대로)'}${smaller && blob.notes && blob.notes.length ? ' · ' + blob.notes.join(' · ') : ''}` });
-    } catch { made.push({ name: f.name, error: kind === 'pdf' ? '열 수 없는 PDF예요 (암호가 걸렸거나 손상됨)' : kind === 'pack' ? '열 수 없는 파일이에요 (암호가 걸렸거나 손상됨)' : '읽을 수 없는 사진이에요' }); }
-  }
-  await finish(made, `용량 줄이기(${label}).zip`);
-  if (kindOfAny(files, 'pdf')) toast('줄인 PDF는 글자를 선택·검색할 수 없어요. 원본은 그대로 있어요.');
-}
-const kindOfAny = (files, k) => files.some(f => kindOf(f) === k);
-// PDF와 사진을 넣은 순서대로 한 PDF로
-async function mergeFiles(files) {
-  const st = $('cvStatus'), out = await PDFLib.PDFDocument.create(), bad = [];
-  for (const f of files) {
-    st.textContent = `${f.name} 합치는 중…`;
-    try {
-      if (kindOf(f) === 'pdf') { const src = await PDFLib.PDFDocument.load(await f.arrayBuffer()); (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p)); }
-      else if (kindOf(f) === 'image') { const one = await PDFLib.PDFDocument.load(await (await imagesToPdf([f])).arrayBuffer()); (await out.copyPages(one, [0])).forEach(p => out.addPage(p)); }
-      else bad.push({ name: f.name, error: 'PDF와 사진만 합칠 수 있어요' });
-    } catch { bad.push({ name: f.name, error: '열 수 없는 파일이에요 (암호가 걸렸거나 손상됨)' }); }
-  }
-  const made = [...bad];
-  if (out.getPageCount()) made.push({ name: '합친 PDF.pdf', blob: new Blob([await out.save()], { type: 'application/pdf' }), note: `${out.getPageCount()}쪽` });
-  await finish(made, '합친 PDF.zip');
-}
-async function finish(made, zipName) {
-  cvResults = made.concat(cvResults).slice(0, 60); cvRender();
-  const ok = made.filter(r => r.blob);
-  if (ok.length === 1) saveBlob(ok[0].blob, ok[0].name); else if (ok.length > 1) await zipSave(ok, zipName);
-  $('cvStatus').textContent = ok.length ? `${ok.length}개를 다운로드 폴더에 저장했어요.` : '';
-}
-{
-  const input = $('cvFile'), conv = document.querySelector('[data-pane="conv"]');
-  const convOpen = () => !conv.hidden;
-  // 파일을 끌고 이 창에 들어오면 커서 자리에 둥근 메뉴를 띄운다.
-  addEventListener('dragover', e => {
-    e.preventDefault();
-    if (!convOpen() || ring || !e.dataTransfer.types.includes('Files')) return;
-    openRing(e.clientX, e.clientY, groupOf([...e.dataTransfer.items].filter(i => i.kind === 'file')), false);
-  });
-  // 창 밖으로 나가면 닫는다.
-  addEventListener('dragleave', e => { if (ring && !ring.menuMode && !e.relatedTarget && (e.clientX <= 0 || e.clientY <= 0 || e.clientX >= innerWidth || e.clientY >= innerHeight)) closeRing(); });
-  addEventListener('drop', e => { e.preventDefault(); if (ring && !ring.menuMode) { closeRing(); toast('둥근 메뉴의 칸 위에 놓아 주세요.'); } });
-  const pick = () => input.click();
-  $('stagePick').addEventListener('click', e => { e.stopPropagation(); pick(); });
-  $('stage').addEventListener('click', pick);
-  $('stage').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
-  input.addEventListener('change', () => {
-    const f = [...input.files]; input.value = ''; if (!f.length) return;
-    const r = $('stage').getBoundingClientRect();
-    openRing(r.left + r.width / 2, r.top + r.height / 2, groupOf(f), true); ringFiles = f;
-  });
-  $('cvOut').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) { const r = cvResults[+b.dataset.i]; saveBlob(r.blob, r.name); } });
-  $('cvZip').addEventListener('click', () => zipSave(cvResults.filter(r => r.blob), '변환 결과.zip'));
-  $('cvClear').addEventListener('click', () => { cvResults = []; cvRender(); $('cvStatus').textContent = ''; });
 }
 dropZone($('rdDrop'), $('rdFile'), async files => {
   const f = files[0], ext = extOf(f.name), st = $('rdStatus');
