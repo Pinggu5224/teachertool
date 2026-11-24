@@ -571,12 +571,16 @@ function openRing(x, y, g, menuMode) {
   const el = document.createElement('div'); el.className = 'ring';
   const W = innerWidth, H = innerHeight;
   el.style.left = Math.min(Math.max(x, 200), W - 200) + 'px'; el.style.top = Math.min(Math.max(y, 200), H - 230) + 'px';
-  const R = 140;
-  el.innerHTML = SLOTS.map(([k, name, sub, color, on], i) => {
-    const a = -Math.PI / 2 + i * 2 * Math.PI / SLOTS.length;
+  // 이 파일로 할 수 있는 칸만 둥글게 고르게 놓는다(못 쓰는 칸은 아예 보이지 않게).
+  const usable = SLOTS.filter(s => s[4](g)), n = usable.length;
+  const R = n <= 3 ? 118 : n <= 6 ? 132 : 140;
+  el.innerHTML = usable.map(([k, name, sub, color], i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1);
     const label = k === 'size' ? `${S.targetMB}MB` : sub;
-    return `<button class="slot" data-k="${k}" style="left:${190 + R * Math.cos(a)}px;top:${190 + R * Math.sin(a)}px;--slot:${color}"${on(g) ? '' : ' disabled'}>${name}<small>${label}</small></button>`;
-  }).join('') + `<div class="mid" data-k="cancel">${menuMode ? '닫기' : '취소<br><small>여기 놓으면 안 바꿔요</small>'}</div><div class="lab" id="ringLab">${g.n}개 파일 · 원하는 칸에 ${menuMode ? '누르세요' : '놓으세요'}</div>`;
+    return `<button class="slot" data-k="${k}" style="left:${190 + R * Math.cos(a)}px;top:${190 + R * Math.sin(a)}px;--slot:${color}">${name}<small>${label}</small></button>`;
+  }).join('') + `<div class="mid" data-k="cancel">${menuMode ? '닫기' : '취소<br><small>여기 놓으면 안 바꿔요</small>'}</div><div class="lab" id="ringLab">${n
+    ? `${g.n}개 파일 · 원하는 칸에 ${menuMode ? '누르세요' : '놓으세요'}${g.doc && !g.pdf && !g.image ? ' · 한글 파일은 글·워드·엑셀로만 바꿀 수 있어요' : ''}`
+    : '이 파일로 할 수 있는 것이 없어요 · 한글·PDF·워드·사진 파일을 넣어 주세요'}</div>`;
   document.body.append(veil, el);
   ring = { el, veil, menuMode };
   el.addEventListener('dragover', e => {

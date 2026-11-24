@@ -60,8 +60,11 @@ function tabs(bar, onChange) {
     document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== b.dataset.tab);
     if (onChange) onChange(b.dataset.tab);
   });
-  const want = location.hash.slice(1), first = bar.querySelector(`button[data-tab="${want}"]`);
-  if (first) first.click();
+  const go = name => { const b = name && bar.querySelector(`button[data-tab="${name}"]`); if (b) b.click(); };
+  go(location.hash.slice(1));
+  // 패널에서 같은 도구의 다른 메뉴(예: 문서 도구의 '용량 맞추기' → 'PDF 편집')를 누르면 그 탭으로 바꾼다.
+  addEventListener('hashchange', () => go(location.hash.slice(1)));
+  addEventListener('message', e => { if (e.data && e.data.udeskTab) go(e.data.udeskTab); });
 }
 // 엑셀에서 붙여 넣은 글을 표(줄 × 칸)로
 const parseTable = text => text.replace(/\r/g, '').split('\n').filter(l => l.trim()).map(l => l.split('\t').map(c => c.trim()));
