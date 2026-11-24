@@ -46,7 +46,7 @@ function make() {
   const box = $('qrCode'), size = +$('qSize').value; box.innerHTML = ''; $('qrBox').hidden = false;
   $('qrCapView').textContent = $('qCap').value.trim();
   try { new QRCode(box, { text, width: size, height: size, correctLevel: QRCode.CorrectLevel.M }); $('qSave').disabled = $('qCopy').disabled = false; }
-  catch { $('qrBox').hidden = true; toast('글이 너무 길어요. 줄여서 다시 해 보세요.'); }
+  catch { $('qrBox').hidden = true; box.innerHTML = ''; $('qSave').disabled = $('qCopy').disabled = true; toast('글이 너무 길어요. 줄여서 다시 해 보세요.'); }
 }
 // 흰 여백과 아래 글씨를 넣은 그림을 만든다(여백이 있어야 잘 읽힌다).
 function picture() {
