@@ -62,12 +62,13 @@ body { display: grid; grid-template-columns: 84px 1fr; height: 100vh; overflow: 
 .groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px 22px; }
 .group h2 { display: flex; align-items: center; gap: 8px; font-size: .86rem; font-weight: 800; color: var(--ink-2); margin: 0 0 8px; }
 .group h2::before { content: ""; width: 3px; height: 14px; border-radius: 2px; background: var(--c); }
-.tile { position: relative; width: 100%; display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; color: var(--ink); }
+.tile { position: relative; width: 100%; height: 74px; display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 14px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; color: var(--ink); }
 .tile:hover { border-color: var(--c); }
 .tile .ic { width: 42px; height: 42px; border-radius: 12px; background: color-mix(in srgb, var(--c) 13%, var(--surface)); color: var(--c); display: grid; place-items: center; }
 .tile .ic svg { width: 22px; height: 22px; }
 .tile b { display: block; font-weight: 800; font-size: 1.02rem; letter-spacing: -0.02em; }
-.tile small { display: block; color: var(--muted); font-size: .84rem; line-height: 1.4; margin-top: 1px; }
+.tile small { display: block; color: var(--muted); font-size: .84rem; line-height: 1.4; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile .ext { font-size: .7rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; margin-left: 6px; vertical-align: 2px; }
 .tile.open::after { content: "열려 있음"; position: absolute; top: 10px; right: 12px; font-size: .7rem; font-weight: 800; color: var(--c); }
 .callbig { display: flex; align-items: center; gap: 16px; width: 100%; border: 0; border-radius: 18px; padding: 18px 22px; background: var(--accent); color: var(--accent-ink); text-align: left; }
@@ -175,12 +176,12 @@ const I = {
 // 세 묶음에 세 개씩: 한 개짜리 묶음이 외따로 남지 않게 (2026-11-24). c = 타일·아이콘 색
 const GROUPS = [['grade', '시험'], ['doc', '문서'], ['class', '학급·생기부']];
 const TOOLS = [
-  { g: 'grade', c: 'grade', name: 'exam', url: 'tools/exam.html#check', icon: 'exam', short: '시험지', title: '시험지 점검', desc: '원안지 번호·배점·선택지·밑줄, 문항정보표 대조' },
-  { g: 'grade', c: 'grade', launch: 'udesk-hangul:open', icon: 'hwp', short: '시험지편집', title: '시험지 편집', desc: '한글 옆 버튼 창: 자간, 서식, 보기 상자, 기호', ext: '한글 옆 창' },
-  { g: 'grade', c: 'grade', name: 'exam', url: 'tools/exam.html#pts', icon: 'grade', short: '배점', title: '배점 계산', desc: '상·중·하 문항 수로 0.1점 단위 배점, 문항별 배점표' },
+  { g: 'grade', c: 'grade', name: 'exam', url: 'tools/exam.html#check', icon: 'exam', short: '시험지', title: '시험지 점검', desc: '원안지 번호·배점·밑줄, 정보표 대조' },
+  { g: 'grade', c: 'grade', launch: 'udesk-hangul:open', icon: 'hwp', short: '시험지편집', title: '시험지 편집', desc: '한글 옆 버튼: 자간·서식·보기 상자', ext: '한글 옆 창' },
+  { g: 'grade', c: 'grade', name: 'exam', url: 'tools/exam.html#pts', icon: 'grade', short: '배점', title: '배점 계산', desc: '상·중·하 문항 수로 0.1점 배점표' },
   { g: 'doc', c: 'doc', name: 'docs', url: 'tools/docs.html#size', icon: 'size', short: '용량', title: '첨부 용량 맞추기', desc: '사진·PDF·한글·PPT를 합쳐서 5MB 아래로', id: 'sizeDesc' },
   { g: 'doc', c: 'doc', name: 'docs', url: 'tools/docs.html#pdf', icon: 'pdf', short: 'PDF', title: 'PDF 편집', desc: '합치기, 쪽 골라내기, 돌리기, 글 뽑기' },
-  { g: 'doc', c: 'doc', name: 'image', url: 'tools/image.html', icon: 'mask', short: '사진편집', title: '사진 편집', desc: '얼굴·이름 가리기, 자르기 / 명단 이름 가리기' },
+  { g: 'doc', c: 'doc', name: 'image', url: 'tools/image.html', icon: 'mask', short: '사진편집', title: '사진 편집', desc: '얼굴·이름 가리기, 자르기, 명단 가리기' },
   { g: 'class', c: 'class', name: 'seat', url: 'tools/seat.html', icon: 'seat', short: '자리', title: '자리뽑기', desc: '규칙을 지키며 자리 뽑기, 자리표 출력' },
   { g: 'class', c: 'record', name: 'check', url: 'tools/check.html', icon: 'check', short: '생기부', title: '생기부 점검', desc: '일람표·PDF를 기재요령 기준으로 점검' },
   { g: 'class', c: 'etc', name: 'qr', url: 'tools/qr.html', icon: 'qr', short: 'QR', title: 'QR 만들기', desc: '설문·자료 주소를 QR 그림으로' },
@@ -192,7 +193,7 @@ $('rail').innerHTML =
   GROUPS.map(([g]) => TOOLS.map((t, i) => t.g !== g ? '' : `<button class="r g-${t.c}" ${attrs(t, i)} title="${esc(t.title)}">${svg(t.icon)}${esc(t.short)}</button>`).join('')).join('<div class="sep"></div>') +
   `<div class="grow"></div><button class="r" id="setBtn" title="설정">${svg('gear')}설정</button>`;
 $('groups').innerHTML = GROUPS.map(([g, label]) => `<div class="group g-${g}"><h2>${label}</h2>` +
-  TOOLS.map((t, i) => t.g !== g ? '' : `<button class="tile g-${t.c}" ${attrs(t, i)}><span class="ic">${svg(t.icon)}</span><span><b>${esc(t.title)}${t.ext ? `<span class="ext">${t.ext}</span>` : ''}</b><small${t.id ? ` id="${t.id}"` : ''}>${esc(t.desc)}</small></span></button>`).join('') + '</div>').join('');
+  TOOLS.map((t, i) => t.g !== g ? '' : `<button class="tile g-${t.c}" ${attrs(t, i)}><span class="ic">${svg(t.icon)}</span><span><b>${esc(t.title)}${t.ext ? `<span class="ext">${t.ext}</span>` : ''}</b><small${t.id ? ` id="${t.id}"` : ''} title="${esc(t.desc)}">${esc(t.desc)}</small></span></button>`).join('') + '</div>').join('');
 
 // ── 유콜과 도구 열기 ──
 const validYoucall = u => /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec(\?.*)?$/.test(u);

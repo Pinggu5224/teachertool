@@ -1,8 +1,12 @@
 // 버전을 올릴 때 sw.js의 CACHE 이름도 같이 바꾼다.
 window.APP_VERSION = {
-  version: '0.6.1',
-  date: '2026-11-24',
+  version: '0.6.2',
+  date: '2026-11-25',
   changes: [
+    {
+      version: '0.6.2', date: '2026-11-25',
+      items: ['홈 화면 타일 높이를 모두 같게 맞추고 설명을 한 줄로 줄여 세 줄이 가지런하게']
+    },
     {
       version: '0.6.1', date: '2026-11-24',
       items: [
